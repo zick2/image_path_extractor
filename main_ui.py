@@ -13,7 +13,7 @@ from path_extractor import extract
 from common import pathsList_to_cv_image, get_existing_pathsList_JSON, save_pathsList_to_JSON_file, cv_strict_resize
 
 # read the image
-image = cv2.imread('assets/sect.png')
+image = cv2.imread('assets/za6_v2.png')
 #image = cv2.imread('E:/GitHub/svg_paths_py/with_ui/assets/sect.png')
 
 # Get the size of the image
@@ -43,12 +43,12 @@ class MainWindow(QMainWindow):
         self.curr_canny_threshold_1 = 50
         self.curr_canny_threshold_2 = 50
 
-        self.max_scale_w = 249
-        self.max_scale_h = 349
-        self.max_scale = 600
+        self.max_scale_w = 4000
+        self.max_scale_h = 4000
+        # self.max_scale_w = height
+        # self.max_scale_h = width
+        self.max_scale = 4000
 
-   
-        
         # extract width and height
         self.xheight = 0
         self.xwidth = 0
@@ -65,15 +65,16 @@ class MainWindow(QMainWindow):
         self.mainLayout = QVBoxLayout()
 
         # self.image_cv2_origin = image
-        self.image_cv2_origin = cv_strict_resize(image, INIT_MIN_WIDTH, INIT_MIN_HEIGHT)
+        self.image_cv2_origin = image  # cv_strict_resize(image, INIT_MIN_WIDTH, INIT_MIN_HEIGHT)
+        
+
         
         self.image_layout = QHBoxLayout()  # To be added to main layout
         # self.label_image = QLabel(self)
         self.image_scene = QGraphicsScene(0, 0, 800, 600)
         self.pixmap_image = 0 # Image to render
         
-        self.image = self.image_cv2_origin
-        self.update_image_view()
+        
         # self.label_image.setScaledConscrtents(False)
         # self.image_layout.addWidget(self.label_image)
         self.image_layout.addWidget(self.view)
@@ -99,8 +100,6 @@ class MainWindow(QMainWindow):
         self.canny_threshold_1_sl_label = QLabel("Threshold1 ("+str(self.curr_canny_threshold_1)+"):")
         self.canny_threshold_1_layout_slider.addWidget(self.canny_threshold_1_sl_label)
         self.canny_threshold_1_slider_handler()
-        
-        #--------------------------------------------------------------
 
         self.canny_threshold_2_layout_slider = QHBoxLayout()
         self.canny_threshold_2_sl = QSlider(Qt.Horizontal)
@@ -120,6 +119,12 @@ class MainWindow(QMainWindow):
         self.image_dimension_layout.addWidget(self.image_dimension_height_label)
         self.mainLayout.addLayout(self.image_dimension_layout)
         
+        #----------------------------------------------------------------
+
+        # Render image
+        self.image = self.scale_cv_image_WH(self.image_cv2_origin, INIT_MIN_WIDTH)
+        self.update_image_view()
+
         # ---------------------------------------------------------------
         self.scale_layout_slider = QHBoxLayout()
         self.scale_sl = QSlider(Qt.Horizontal)
@@ -127,40 +132,46 @@ class MainWindow(QMainWindow):
         self.scale_layout_slider.addWidget(self.scale_sl_label)
         self.scale_slider_handler()
 
-        self.scale_width_layout_slider = QHBoxLayout()
-        self.scale_width_sl = QSlider(Qt.Horizontal)
-        self.scale_width_sl_label = QLabel("Height")
-        self.scale_width_layout_slider.addWidget(self.scale_width_sl_label)
-        self.scale_width_slider_handler()
+        # Height slider
+        # self.scale_width_layout_slider = QHBoxLayout()
+        # self.scale_width_sl = QSlider(Qt.Horizontal)
+        # self.scale_width_sl_label = QLabel("Height")
+        # self.scale_width_layout_slider.addWidget(self.scale_width_sl_label)
+        # self.scale_width_slider_handler()
 
-        self.scale_height_layout_slider = QHBoxLayout()
-        self.scale_height_sl = QSlider(Qt.Horizontal)
-        self.scale_height_sl_label = QLabel("Width")
-        self.scale_height_layout_slider.addWidget(self.scale_height_sl_label)
-        self.scale_height_slider_handler()
+        # Width slider
+        # self.scale_height_layout_slider = QHBoxLayout()
+        # self.scale_height_sl = QSlider(Qt.Horizontal)
+        # self.scale_height_sl_label = QLabel("Width")
+        # self.scale_height_layout_slider.addWidget(self.scale_height_sl_label)
+        # self.scale_height_slider_handler()
 
+        #----------------------------------------------------------------------------
         self.buttons_layout = QHBoxLayout()
 
+        # Extract paths button
         self.extract_button = QPushButton("Extract Paths")
         self.extract_button.setFixedWidth(100)
         self.extract_button.clicked.connect(self.onExtract_paths)
         self.buttons_layout.addWidget(self.extract_button)
         self.mainLayout.addLayout(self.buttons_layout)
 
+        # Import Image button
         self.import_button = QPushButton("Import Image")
         self.import_button.setFixedWidth(100)
         self.import_button.clicked.connect(self.onImport_image)
         self.buttons_layout.addWidget(self.import_button)
         self.mainLayout.addLayout(self.buttons_layout)
 
+        # Import JSON extract button
         self.import_extract_button = QPushButton("Import JSON Extract")
         self.import_extract_button.setFixedWidth(150)
         self.import_extract_button.clicked.connect(self.onImport_extract)
         self.buttons_layout.addWidget(self.import_extract_button)
         self.mainLayout.addLayout(self.buttons_layout)
 
-        self.scale_cv_image(self.image_cv2_origin)
-        
+
+
         # Set the alignment property of the view to enable automatic adjustment of scroll bars
         self.view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
@@ -203,9 +214,11 @@ class MainWindow(QMainWindow):
         self.image, final_paths, non_mirror_final_paths = extract(self.image, self.curr_canny_threshold_1, self.curr_canny_threshold_2)
         self.update_image_view()
         
-        save_pathsList_to_JSON_file(final_paths)
-        save_pathsList_to_JSON_file(non_mirror_final_paths, "non_mirror_pathsMap_extract.json")
-        convert_paths_to_svg(non_mirror_final_paths, "test_output.svg")
+        # Saving path data
+        save_pathsList_to_JSON_file(final_paths)  # Json path data (mirrored paths)
+        save_pathsList_to_JSON_file(non_mirror_final_paths, "output/non_mirror_pathsMap_extract.json")  # JSON path data (not mirrored)
+        convert_paths_to_svg(non_mirror_final_paths, "output/non_mirror_pathsMap_extract.svg")   # SVG path data (mirrored paths)
+        convert_paths_to_svg(non_mirror_final_paths, "output/pathsMap_extract.svg")  # SVG path data (not mirrored)
 
         self.isExtracting = False
         self.loading_label.hide()
@@ -223,9 +236,10 @@ class MainWindow(QMainWindow):
                 print("[import_image_handler()] Image is None ")
                 return
             
-            _image = cv_strict_resize(_image, INIT_MIN_WIDTH, INIT_MIN_HEIGHT)
+           # _image = cv_strict_resize(_image, INIT_MIN_WIDTH, INIT_MIN_HEIGHT)
+            self.scale_sl.setValue(INIT_MIN_WIDTH)  # reset scale slider
             self.image_cv2_origin = _image
-            self.image = self.scale_cv_image(self.image_cv2_origin)
+            self.image = self.scale_cv_image_WH(self.image_cv2_origin, INIT_MIN_WIDTH)
         else:
             print("Something is wrong with image path")
             return
@@ -246,7 +260,7 @@ class MainWindow(QMainWindow):
                 print("[import_json_paths_extract_handler()] Image is None ")
                 return
             self.image_cv2_origin = image 
-            self.image = self.scale_cv_image(self.image_cv2_origin)
+            self.image = self.scale_cv_image_WH(self.image_cv2_origin, INIT_MIN_WIDTH)
         else:
             print("[import_json_paths_extract_handler()] Something is wrong with image path")
             return
@@ -262,7 +276,7 @@ class MainWindow(QMainWindow):
     def scale_slider_handler(self):
         self.scale_sl.setMinimum(1)
         self.scale_sl.setMaximum(self.max_scale)
-        self.scale_sl.setValue(1)
+        self.scale_sl.setValue(INIT_MIN_WIDTH)
         self.scale_sl.setTickPosition(QSlider.TicksBelow)
         self.scale_sl.setTickInterval(1)
         self.scale_layout_slider.addWidget(self.scale_sl)
@@ -329,7 +343,7 @@ class MainWindow(QMainWindow):
         self.scale_w = self.scale_sl.value()
         self.scale_h = self.scale_sl.value()
 
-        self.image = self.scale_cv_image_WH(self.image_cv2_origin, self.scale_h, self.scale_w)
+        self.image = self.scale_cv_image_WH(self.image_cv2_origin, self.scale_w)
         self.update_image_view()
     
     def scale_image_view_width(self):
@@ -358,7 +372,7 @@ class MainWindow(QMainWindow):
         _image = cv2.resize(self.image_cv2_origin, (width+scale_w, height+scale_h), interpolation=cv2.INTER_AREA)
         return _image
     
-    def scale_cv_image_WH(self, _image, scale_w=1, scale_h=1):
+    def scale_cv_image_WH(self, _image, scale_w=1):
         # if (scale_h <= 1 and scale_w <= 1):
         #     scale_h = self.scale_h
         #     scale_w = self.scale_w
@@ -372,12 +386,11 @@ class MainWindow(QMainWindow):
             _ratio = height/width
         
         if width > height:
-            new_w = width+scale_w
+            new_w = scale_w  # +width
             new_h = int(new_w*_ratio)
         else:
-            new_h = width+scale_h
+            new_h = scale_w  # +width
             new_w = int(new_h*_ratio)
-        
         
         # print(width, height, "RS:", new_w, _ratio)
         self.set_image_width_height_labels(new_w, new_h)
