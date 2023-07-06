@@ -13,7 +13,7 @@ from path_extractor import extract
 from common import pathsList_to_cv_image, get_existing_pathsList_JSON, save_pathsList_to_JSON_file, cv_strict_resize
 
 # read the image
-image = cv2.imread('assets/g2.jpg')
+image = cv2.imread('assets/sect.png')
 #image = cv2.imread('E:/GitHub/svg_paths_py/with_ui/assets/sect.png')
 
 # Get the size of the image
