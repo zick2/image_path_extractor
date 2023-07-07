@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
         save_pathsList_to_JSON_file(final_paths)  # Json path data (mirrored paths)
         save_pathsList_to_JSON_file(non_mirror_final_paths, "output/non_mirror_pathsMap_extract.json")  # JSON path data (not mirrored)
         convert_paths_to_svg(non_mirror_final_paths, "output/non_mirror_pathsMap_extract.svg")   # SVG path data (mirrored paths)
-        convert_paths_to_svg(non_mirror_final_paths, "output/pathsMap_extract.svg")  # SVG path data (not mirrored)
+        convert_paths_to_svg(final_paths, "output/pathsMap_extract.svg")  # SVG path data (not mirrored)
 
         self.isExtracting = False
         self.loading_label.hide()
