@@ -1,16 +1,13 @@
 import os
-import json
 import sys
 
-import time
 import cv2
 from PySide6.QtGui import QPixmap, QImage, Qt, QBrush, QColor, QFont
 from PySide6.QtWidgets import QMainWindow, QApplication, QFileDialog, QLabel, QPushButton, QVBoxLayout, QSlider, QWidget, QHBoxLayout, QGraphicsScene, QGraphicsView, QGraphicsPixmapItem
-import numpy as np
 
 from path_to_svg import convert_paths_to_svg
 from path_extractor import extract
-from common import pathsList_to_cv_image, get_existing_pathsList_JSON, save_pathsList_to_JSON_file, cv_strict_resize
+from common import pathsList_to_cv_image, get_existing_pathsList_JSON, save_pathsList_to_JSON_file
 
 # read the image
 image = cv2.imread('assets/za6_v2.png')
